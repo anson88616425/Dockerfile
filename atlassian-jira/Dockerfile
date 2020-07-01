@@ -1,7 +1,7 @@
 FROM openjdk:8-alpine
 
 # Configuration variables. https://dev.mysql.com/downloads/connector/j/5.1.html  https://jdbc.postgresql.org/download.html
-ENV JIRA_HOME=/var/atlassian/jira JIRA_INSTALL=/opt/atlassian/jira MYSQL_connector=5.1.47 PG_JDBC=42.2.5
+ENV JIRA_HOME=/var/atlassian/jira JIRA_INSTALL=/opt/atlassian/jira MYSQL_connector=5.1.49 PG_JDBC=42.2.5
 ENV JIRA_VERSION=8.0.0 JIRA_TYPE=software JAVA_OPTS='-Duser.timezone=GMT+08'
 
 # Install Atlassian JIRA and helper tools and setup initial home
@@ -12,7 +12,7 @@ RUN set -x \
     && chmod -R 700            "${JIRA_HOME}" \
     && chown -R daemon:daemon  "${JIRA_HOME}" \
     && curl -Ls                "https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_TYPE}-${JIRA_VERSION}.tar.gz" | tar -xz --directory "${JIRA_INSTALL}" --strip-components=1 --no-same-owner \
-    && curl -Ls                "https://cdn.mysql.com/Downloads/Connector-J/mysql-connector-java-${MYSQL_connector}.tar.gz" | tar -xz --directory "${JIRA_INSTALL}/lib" --strip-components=1 --no-same-owner "mysql-connector-java-${MYSQL_connector}/mysql-connector-java-${MYSQL_connector}-bin.jar" \
+    && curl -Ls                "http://ftp.ntu.edu.tw/MySQL/Downloads/Connector-J/mysql-connector-java-${MYSQL_connector}.tar.gz" | tar -xz --directory "${JIRA_INSTALL}/lib" --strip-components=1 --no-same-owner "mysql-connector-java-${MYSQL_connector}/mysql-connector-java-${MYSQL_connector}.jar" \
     && rm -f                   "${JIRA_INSTALL}/lib/postgresql-9.1-903.jdbc4-atlassian-hosted.jar" \
     && curl -Ls                "https://jdbc.postgresql.org/download/postgresql-${PG_JDBC}.jar" -o "${JIRA_INSTALL}/lib/postgresql-${PG_JDBC}.jar" \
     && chmod -R 700            "${JIRA_INSTALL}/conf" "${JIRA_INSTALL}/logs" "${JIRA_INSTALL}/temp" "${JIRA_INSTALL}/work" \
@@ -39,6 +39,8 @@ VOLUME ["/var/atlassian/jira", "/opt/atlassian/jira/logs"]
 WORKDIR /var/atlassian/jira
 
 COPY "docker-entrypoint.sh" "/"
+USER root
+RUN chmod +x /docker-entrypoint.sh
 COPY  atlassian-extras-3.2.jar  ${JIRA_INSTALL}/atlassian-jira/WEB-INF/lib/
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
